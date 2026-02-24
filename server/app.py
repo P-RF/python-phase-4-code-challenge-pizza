@@ -71,9 +71,58 @@ class RestaurantByID(Resource):
 
         return '', 204
 
+class Pizzas(Resource):
+
+    def get(self):
+        pizzas = [p.to_dict(only=('id', 'ingredients', 'name')) for p in Pizza.query.all()]
+        return pizzas, 200
+
+
+class RestaurantPizzaRes(Resource):
+
+    def post(self):
+        request_data = request.get_json()
+
+        pizza_id = request_data.get("pizza_id")
+        restaurant_id = request_data.get("restaurant_id")
+        price = request_data.get("price")
+
+        pizza = Pizza.query.get(pizza_id)
+        restaurant = Restaurant.query.get(restaurant_id)
+
+        if not pizza or not restaurant or price is None or not (1 <= price <= 30):
+            return {"errors": ["validation errors"]}, 400
+
+        new_rp = RestaurantPizza(
+            price=price,
+            pizza_id=pizza.id,
+            restaurant_id=restaurant.id
+        )
+        db.session.add(new_rp)
+        db.session.commit()
+
+        response_dict = {
+            "id": new_rp.id,
+            "pizza": {
+                "id": pizza.id,
+                "ingredients": pizza.ingredients,
+                "name": pizza.name,
+            },
+            "pizza_id": pizza.id,
+            "price": new_rp.price,
+            "restaurant": {
+                "address": restaurant.address,
+                "id": restaurant.id,
+                "name": restaurant.name,
+            },
+            "restaurant_id": restaurant.id
+        }
+        return response_dict, 201
 
 api.add_resource(Restaurants, '/restaurants')
 api.add_resource(RestaurantByID, '/restaurants/<int:id>')
+api.add_resource(Pizzas, '/pizzas')
+api.add_resource(RestaurantPizzaRes, '/restaurant_pizzas')
 
 if __name__ == "__main__":
     app.run(port=5555, debug=True)
