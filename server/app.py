@@ -60,6 +60,17 @@ class RestaurantByID(Resource):
             response_dict["restaurant_pizzas"].append(restaurant_pizzas_dict)
         return response_dict, 200
 
+    def delete(self, id):
+        restaurant = Restaurant.query.filter(Restaurant.id == id).first()
+
+        if not restaurant:
+            return {"error": "Restaurant not found"}, 404
+
+        db.session.delete(restaurant)
+        db.session.commit()
+
+        return '', 204
+
 
 api.add_resource(Restaurants, '/restaurants')
 api.add_resource(RestaurantByID, '/restaurants/<int:id>')
