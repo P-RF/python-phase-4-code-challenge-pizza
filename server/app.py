@@ -90,6 +90,7 @@ class RestaurantPizzaRes(Resource):
         pizza = Pizza.query.get(pizza_id)
         restaurant = Restaurant.query.get(restaurant_id)
 
+        # validation
         if not pizza or not restaurant or price is None or not (1 <= price <= 30):
             return {"errors": ["validation errors"]}, 400
 
